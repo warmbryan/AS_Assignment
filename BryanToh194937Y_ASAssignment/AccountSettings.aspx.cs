@@ -59,6 +59,12 @@ namespace BryanToh194937Y_ASAssignment
             if (!ValidateFields())
                 return;
 
+            if (UserUtils.AccountAgeMinute(Session["Email"].ToString()) <= 5)
+            {
+                showFeedback("You may not change your password again in an interval of 5 minutes or less.");
+                return;
+            }
+
             string email = Session["email"].ToString();
             string password = tb_curPassword.Text.Trim();
             string newPassword = tb_newPassword.Text.Trim();

@@ -121,5 +121,22 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
 
             return success;
         }
+
+        public static int AccountAgeMinute(string email)
+        {
+            RefreshConnection();
+
+            cmd.CommandText = "SELECT DATEDIFF(minute, [LastPassDate], GETDATE()) TimeDiff FROM [dbo].[Users] WHERE Email = @Email;";
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@Email", email);
+            int minutes = 0;
+
+            SqlDataReader sdr = cmd.ExecuteReader();
+
+            if (sdr.Read())
+                minutes = Convert.ToInt32(sdr["TimeDiff"]);
+
+            return minutes;
+        }
     }
 }
