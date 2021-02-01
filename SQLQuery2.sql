@@ -1,1 +1,0 @@
-﻿INSERT INTO dbo.[Users] ([FirstName], [LastName], [CCNo], [CCExpiry], [CCCVV], [Email], [PasswordHash], [PasswordSalt], [DateOfBirth], [IV], [Key]) VALUES ('bruh', 'bruh', 'bruh', 'bruh', 'bruh', 'bruh', 'bruh', 'bruh', '2000-10-18', 'bruh', 'bruh');
