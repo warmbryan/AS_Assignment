@@ -34,6 +34,7 @@
 	<div class="form-group">
 		<label>New Password</label>
 		<asp:TextBox ID="tb_newPassword" runat="server" TextMode="Password" CssClass="form-control" />
+        <asp:Label ID="lbl_fbNewPassword" Text="" runat="server" />
 	</div>
 
 	<div class="form-group">
@@ -46,4 +47,8 @@
 	</div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="scripts" runat="server">
+    <script>
+        const passwordFieldElem = "<%=tb_newPassword.ClientID%>", labelElem = "<%=lbl_fbNewPassword.ClientID%>";
+    </script>
+    <script src="Public/js/validation.js"></script>
 </asp:Content>

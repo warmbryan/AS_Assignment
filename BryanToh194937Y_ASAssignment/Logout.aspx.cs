@@ -11,7 +11,7 @@ namespace BryanToh194937Y_ASAssignment
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            attemptLogout();
         }
 
         protected void attemptLogout()

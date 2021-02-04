@@ -57,7 +57,7 @@ namespace BryanToh194937Y_ASAssignment
             Session["AuthToken"] = guid;
 
             Response.Cookies.Add(new HttpCookie("AuthToken", guid));
-            Response.Redirect("Home.aspx");
+            Response.Redirect("~/Home.aspx");
         }
 
         protected void showFeedback(string message)

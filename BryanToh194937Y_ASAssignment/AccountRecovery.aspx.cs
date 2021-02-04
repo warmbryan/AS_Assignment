@@ -92,14 +92,14 @@ namespace BryanToh194937Y_ASAssignment
 				return;
 			}
 
-			if (Password.comparePasswordhash(Password.getPasswordHash(newPassword, existPassSalt), existPassHash))
+			if (Password.ComparePasswordHash(Password.GetPasswordHash(newPassword, existPassSalt), existPassHash))
             {
 				showFeedback("Your new password cannot be a password you've used before.");
 				return;
 
 			}
 
-			Password.updatePassword(userId, Convert.ToBase64String(Password.getPasswordHash(tb_newPassword.Text.Trim(), existPassSalt)));
+			Password.UpdatePassword(userId, Convert.ToBase64String(Password.GetPasswordHash(tb_newPassword.Text.Trim(), existPassSalt)));
 			UserUtils.UnlockAccount(email);
 			lbl_feedback.ForeColor = Color.Green;
 			showFeedback("Password has been updated.");

@@ -51,6 +51,11 @@ namespace BryanToh194937Y_ASAssignment
             {
                 throw ex;
             }
+
+            if (UserUtils.AccountAgeMinute(Session["Email"].ToString()) >= 15)
+            {
+                showFeedback("You need to change your password after 15 minutes.");
+            }
         }
 
         protected void Change_Password(object sender, EventArgs e)
@@ -61,7 +66,7 @@ namespace BryanToh194937Y_ASAssignment
 
             if (UserUtils.AccountAgeMinute(Session["Email"].ToString()) <= 5)
             {
-                showFeedback("You may not change your password again in an interval of 5 minutes or less.");
+                showFeedback("You have previously changed your password, you may reset again after 5 minutes after previous reset.");
                 return;
             }
 
@@ -107,19 +112,12 @@ namespace BryanToh194937Y_ASAssignment
             if (pHash != null && pSalt != null)
             {
                 // ensure authentication before authorizing
-                if (Password.comparePasswordhash(Password.getPasswordHash(password, pSalt), pHash))
+                if (Password.ComparePasswordHash(Password.GetPasswordHash(password, pSalt), pHash))
                 {
                     // get string hash of the new password to check and change if there are no existance of it
-                    pHashNew = Convert.ToBase64String(Password.getPasswordHash(newPassword, pSalt));
+                    pHashNew = Convert.ToBase64String(Password.GetPasswordHash(newPassword, pSalt));
 
                     bool passwordHistory = false;
-
-                    // check if it's the same as current password
-                    if (pHash.Equals(pHashNew))
-                    {
-                        lbl_feedback.Text = "New password must not be the same as the current password.";
-                        return;
-                    }
 
                     // checks in password history if password has been used before
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15#a-specifying-integer-constants-for-offset-and-fetch-values
@@ -140,18 +138,18 @@ namespace BryanToh194937Y_ASAssignment
 
                     if (passwordHistory)
                     {
-                        lbl_feedback.Text = "Previously 2 old passwords cannot be used.";
+                        showFeedback("Previously 2 old passwords cannot be used.");
                         return;
                     }
 
-                    Password.updatePassword(userId, pHashNew);
-                    Password.insertPasswordHistory(userId, pHash);
-                    lbl_feedback.Text = "Password has been updated.";
+                    Password.UpdatePassword(userId, pHashNew);
+                    Password.SavePasswordHashToHistory(userId, pHash);
+                    showFeedback("Password has been updated.");
                     lbl_feedback.ForeColor = Color.Green;
                 }
                 else
                 {
-                    lbl_feedback.Text = "Current password is invalid, please try again.";
+                    showFeedback("Current password is invalid, please try again.");
                     return;
                 }
             }
@@ -161,19 +159,34 @@ namespace BryanToh194937Y_ASAssignment
         {
             if (String.IsNullOrEmpty(tb_curPassword.Text))
             {
-                lbl_feedback.Text = "Current password field must not be empty.";
+                showFeedback("Current password field must not be empty.");
                 return false;
             }
 
             if (String.IsNullOrEmpty(tb_newPassword.Text))
             {
-                lbl_feedback.Text = "New password field must not be empty.";
+                showFeedback("New password field must not be empty.");
                 return false;
             }
 
             if (!tb_newPassword.Text.Trim().Equals(tb_confirmNewPassword.Text.Trim()))
             {
-                lbl_feedback.Text = "New password fields must be the same.";
+                showFeedback("New password fields must be the same.");
+                return false;
+            }
+
+            if (tb_curPassword.Text.Trim().Equals(tb_newPassword.Text.Trim()))
+            {
+                showFeedback("New password should not be the same as your current one.");
+                return false;
+            }
+
+            if (Password.TestPasswordStrength(tb_newPassword.Text.Trim(), lbl_fbNewPassword) != 0)
+            {
+                showFeedback(
+                    "Password should have at least 8 characters, " +
+                    "1 lower capital, 1 upper capital, 1 number, and 1 special character"
+                    );
                 return false;
             }
 

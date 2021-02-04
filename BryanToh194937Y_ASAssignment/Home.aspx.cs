@@ -20,9 +20,9 @@ namespace BryanToh194937Y_ASAssignment
         byte[] Key = null;
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["Email"] != null && Session["AuthToken"] != null && Request.Cookies["AuthToken"] != null)
+            if (!(Session["Email"] != null && Session["AuthToken"] != null && Request.Cookies["AuthToken"] != null))
             {
-                Response.Redirect("Login.aspx", false);
+                Response.Redirect("~/Login.aspx", false);
                 return;
             }
 

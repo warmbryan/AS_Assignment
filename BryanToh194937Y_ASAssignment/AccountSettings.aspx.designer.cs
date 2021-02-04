@@ -78,6 +78,15 @@ namespace BryanToh194937Y_ASAssignment
         protected global::System.Web.UI.WebControls.TextBox tb_newPassword;
 
         /// <summary>
+        /// lbl_fbNewPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_fbNewPassword;
+
+        /// <summary>
         /// tb_confirmNewPassword control.
         /// </summary>
         /// <remarks>

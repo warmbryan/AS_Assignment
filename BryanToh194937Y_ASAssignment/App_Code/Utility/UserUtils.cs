@@ -17,33 +17,22 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
 {
     public static class UserUtils
     {
-        private static SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString);
-        private static SqlCommand cmd = new SqlCommand();
-
-        public static void RefreshConnection()
-        {
-            if (con.State == ConnectionState.Closed || con.State == ConnectionState.Broken)
-                con.Open();
-
-            cmd.Connection = con;
-            cmd.Parameters.Clear();
-            cmd.Dispose();
-        }
-
         public static bool Exist(string email)
         {
-            RefreshConnection();
             bool exist = false;
 
             try
             {
-                using (SqlDataAdapter sda = new SqlDataAdapter("SELECT [Id] FROM [dbo].[Users] WHERE [Email] = @Email;", con))
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
                 {
-                    sda.SelectCommand.CommandType = CommandType.Text;
-                    sda.SelectCommand.Parameters.AddWithValue("@Email", email);
-                    DataSet ds = new DataSet();
-                    sda.Fill(ds);
-                    exist = (ds.Tables[0].Rows.Count > 0);
+                    using (SqlDataAdapter sda = new SqlDataAdapter("SELECT [Id] FROM [dbo].[Users] WHERE [Email] = @Email;", con))
+                    {
+                        sda.SelectCommand.CommandType = CommandType.Text;
+                        sda.SelectCommand.Parameters.AddWithValue("@Email", email);
+                        DataSet ds = new DataSet();
+                        sda.Fill(ds);
+                        exist = (ds.Tables[0].Rows.Count > 0);
+                    }
                 }
             }
             catch (Exception ex)
@@ -56,86 +45,143 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
 
         public static bool Authenticate(string email, string password)
         {
-            RefreshConnection();
             bool success;
             string pHash = null;
-            string pSalt = null;
-            cmd.CommandText = "SELECT [PasswordHash], [PasswordSalt] FROM dbo.[Users] WHERE [Email] = @Email;";
-            cmd.Parameters.AddWithValue("@Email", email);
+            string pSalt = null;            
             
             try
             {
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
                 {
-                    pHash = reader["PasswordHash"].ToString();
-                    pSalt = reader["PasswordSalt"].ToString();
+                    using (SqlCommand cmd = new SqlCommand("SELECT [PasswordHash], [PasswordSalt] FROM dbo.[Users] WHERE [Email] = @Email;", con))
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        con.Open();
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            pHash = reader["PasswordHash"].ToString();
+                            pSalt = reader["PasswordSalt"].ToString();
+                        }
+                        reader.Close();
+                    }
                 }
-                reader.Close();
             }
             catch (Exception ex)
             {
-                return false;
-                // throw ex
+                throw ex;
             }
 
-            success = Password.comparePasswordhash(Password.getPasswordHash(password, pSalt), pHash);
+            success = Password.ComparePasswordHash(Password.GetPasswordHash(password, pSalt), pHash);
 
             return success;
         }
 
         public static bool AddFailedAuthAttempt(string email)
         {
-            RefreshConnection();
-            
-            cmd.CommandText = "UPDATE [dbo].[Users] SET [FailedLogin] = [FailedLogin] + 1 WHERE Email = @Email and 3 > [FailedLogin];";
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@Email", email);
-            bool success = (cmd.ExecuteNonQuery() > 0);
+            bool success = false;
 
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("UPDATE [dbo].[Users] SET [FailedLogin] = [FailedLogin] + 1 WHERE Email = @Email and 3 > [FailedLogin];", con))
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email);
+
+                        con.Open();
+
+                        success = (cmd.ExecuteNonQuery() > 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
             return success;
         }
 
         public static bool IsAccountDisabled(string email)
         {
-            RefreshConnection();
-
-            SqlDataAdapter sda = new SqlDataAdapter("SELECT [Id] FROM [dbo].[Users] WHERE [Email] = @Email and [FailedLogin] = 3;", con);
-            sda.SelectCommand.CommandType = CommandType.Text;
-            sda.SelectCommand.Parameters.AddWithValue("@Email", email);
-
             DataSet sd = new DataSet();
-            sda.Fill(sd);
 
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter("SELECT [Id] FROM [dbo].[Users] WHERE [Email] = @Email and [FailedLogin] = 3;", con))
+                    {
+                        sda.SelectCommand.CommandType = CommandType.Text;
+                        sda.SelectCommand.Parameters.AddWithValue("@Email", email);
+
+                        sda.Fill(sd);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            
             return (sd.Tables[0].Rows.Count > 0);
         }
 
         public static bool UnlockAccount(string email)
         {
-            RefreshConnection();
+            bool success = false;
 
-            cmd.CommandText = "UPDATE [dbo].[Users] SET FailedLogin = 0 WHERE Email = @Email;";
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@Email", email);
-            bool success = (cmd.ExecuteNonQuery() > 0);
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("UPDATE [dbo].[Users] SET FailedLogin = 0 WHERE Email = @Email;", con))
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        con.Open();
+
+                        success = (cmd.ExecuteNonQuery() > 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             return success;
         }
 
         public static int AccountAgeMinute(string email)
         {
-            RefreshConnection();
-
-            cmd.CommandText = "SELECT DATEDIFF(minute, [LastPassDate], GETDATE()) TimeDiff FROM [dbo].[Users] WHERE Email = @Email;";
-            cmd.CommandType = CommandType.Text;
-            cmd.Parameters.AddWithValue("@Email", email);
             int minutes = 0;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT DATEDIFF(minute, [LastPassDate], GETDATE()) TimeDiff FROM [dbo].[Users] WHERE Email = @Email;", con))
+                    {
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        con.Open();
 
-            SqlDataReader sdr = cmd.ExecuteReader();
+                        SqlDataReader sdr = cmd.ExecuteReader();
 
-            if (sdr.Read())
-                minutes = Convert.ToInt32(sdr["TimeDiff"]);
-
+                        if (sdr.Read())
+                            minutes = Convert.ToInt32(sdr["TimeDiff"]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
             return minutes;
         }
     }

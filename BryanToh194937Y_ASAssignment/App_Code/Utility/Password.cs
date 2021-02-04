@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Text;
-using System.Security.Cryptography;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web.UI.WebControls;
 
 namespace BryanToh194937Y_ASAssignment.App_Code.Utility
 {
     public static class Password
     {
-        public static byte[] getPasswordHash(string password, string passwordSalt)
+        // hashes plaintext password into salted hash
+        public static byte[] GetPasswordHash(string password, string passwordSalt)
         {
             byte[] hash = null;
             try
@@ -29,7 +30,7 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
             return hash;
         }
 
-        public static bool comparePasswordhash(byte[] inputPasswordHash, string existingPasswordHash)
+        public static bool ComparePasswordHash(byte[] inputPasswordHash, string existingPasswordHash)
         {
             bool success = false;
 
@@ -49,7 +50,7 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
         }
 
         // updates the user password
-        public static bool updatePassword(string userId, string newPasswordHash)
+        public static bool UpdatePassword(string userId, string newPasswordHash)
         {
             bool success = false;
 
@@ -69,7 +70,7 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
             return success;
         }
 
-        public static bool insertPasswordHistory(string userId, string passwordHash)
+        public static bool SavePasswordHashToHistory(string userId, string passwordHash)
         {
             bool success = false;
 
@@ -87,6 +88,119 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
             }
 
             return success;
+        }
+
+        public static int TestPasswordStrength(string password, Label passwordLabel, Label feedbackLabel)
+        {
+            int scores = checkPassword(password);
+            string status = "";
+            switch (scores)
+            {
+                case 1:
+                    status = "Very Weak";
+                    break;
+                case 2:
+                    status = "Weak";
+                    break;
+                case 3:
+                    status = "Medium";
+                    break;
+                case 4:
+                    status = "Strong";
+                    break;
+                case 5:
+                    status = "Excellent";
+                    break;
+                default:
+                    break;
+            }
+
+            if (scores < 4)
+            {
+                passwordLabel.Text = status;
+                passwordLabel.ForeColor = Color.Red;
+
+                feedbackLabel.Text += "Password strength is " + status + "<br>" +
+                    "Password should have at least 8 characters, " +
+                    "1 lower capital, 1 upper capital, 1 number, and 1 special character";
+            }
+
+            return (scores < 4) ? 1 : 0;
+        }
+
+        public static int TestPasswordStrength(string password, Label passwordLabel)
+        {
+            int scores = checkPassword(password);
+            string status = "";
+            switch (scores)
+            {
+                case 1:
+                    status = "Very Weak";
+                    break;
+                case 2:
+                    status = "Weak";
+                    break;
+                case 3:
+                    status = "Medium";
+                    break;
+                case 4:
+                    status = "Strong";
+                    break;
+                case 5:
+                    status = "Excellent";
+                    break;
+                default:
+                    break;
+            }
+
+            if (scores < 4)
+            {
+                passwordLabel.Text = status;
+                passwordLabel.ForeColor = Color.Red;
+            }
+
+            return (scores < 4) ? 1 : 0;
+        }
+
+        private static int checkPassword(string password)
+        {
+            int score = 0;
+
+            // score 1
+            if (password.Length < 8)
+            {
+                return 1;
+            }
+            else
+            {
+                score = 1;
+            }
+
+            // score 2 weak
+            if (Regex.IsMatch(password, "[a-z]"))
+            {
+                score++;
+            }
+
+            // score 3 medium
+            if (Regex.IsMatch(password, "[A-Z]"))
+            {
+                score++;
+            }
+
+            // score 4 strong
+            if (Regex.IsMatch(password, "[0-9]"))
+            {
+                score++;
+            }
+
+            // score 5 excellent
+            if (Regex.IsMatch(password, "[^A-Za-z0-9]"))
+            {
+                score++;
+            }
+
+            return score;
         }
     }
 }

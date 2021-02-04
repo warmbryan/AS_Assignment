@@ -18,6 +18,8 @@ using System.Net;
 using System.IO;
 using System.Web.Script.Serialization;
 
+using BryanToh194937Y_ASAssignment.App_Code.Utility;
+
 namespace BryanToh194937Y_ASAssignment
 {
     public partial class Register : System.Web.UI.Page
@@ -38,7 +40,7 @@ namespace BryanToh194937Y_ASAssignment
                 if (ValidateInput())
                     return;
 
-                if (Accounts.AccountExists(tb_email.Text.Trim()))
+                if (UserUtils.Exist(tb_email.Text.Trim()))
                 {
                     lbl_userFeedback.ForeColor = Color.Red;
                     lbl_userFeedback.Text = "The email has been registered on this site";
@@ -186,42 +188,7 @@ namespace BryanToh194937Y_ASAssignment
             }
 
             // password checker
-            {
-                int scores = checkPassword(tb_password.Text);
-                string status = "";
-                switch (scores)
-                {
-                    case 1:
-                        status = "Very Weak";
-                        break;
-                    case 2:
-                        status = "Weak";
-                        break;
-                    case 3:
-                        status = "Medium";
-                        break;
-                    case 4:
-                        status = "Strong";
-                        break;
-                    case 5:
-                        status = "Excellent";
-                        break;
-                    default:
-                        break;
-                }
-
-                if (scores < 4)
-                {
-                    lbl_fbPassword.Text = status;
-                    lbl_fbPassword.ForeColor = Color.Red;
-
-                    lbl_userFeedback.Text += "Password strength is " + status + "<br>" +
-                        "Password should have at least 8 characters, " +
-                        "1 lower capital, 1 upper capital, 1 number, and 1 special character";
-
-                    invalid++;
-                }
-            }
+            invalid += Password.TestPasswordStrength(tb_password.Text.Trim(), lbl_fbPassword, lbl_userFeedback);
 
             return Convert.ToBoolean(invalid);
         }
@@ -258,47 +225,6 @@ namespace BryanToh194937Y_ASAssignment
 
             return result;
         }
-
-        private int checkPassword(string password)
-        {
-            int score = 0;
-
-            // score 1
-            if (password.Length < 8)
-            {
-                return 1;
-            }
-            else
-            {
-                score = 1;
-            }
-
-            // score 2 weak
-            if (Regex.IsMatch(password, "[a-z]"))
-            {
-                score++;
-            }
-
-            // score 3 medium
-            if (Regex.IsMatch(password, "[A-Z]"))
-            {
-                score++;
-            }
-
-            // score 4 strong
-            if (Regex.IsMatch(password, "[0-9]"))
-            {
-                score++;
-            }
-
-            // score 5 excellent
-            if (Regex.IsMatch(password, "[^A-Za-z0-9]"))
-            {
-                score++;
-            }
-
-            return score;
-        }
     }
 
     public class MyObject
@@ -306,24 +232,5 @@ namespace BryanToh194937Y_ASAssignment
         public string success { get; set; }
 
         public List<string> ErrorMessage { get; set; }
-    }
-
-    public class Accounts
-    {
-        public static bool AccountExists(string email)
-        {
-            bool exists = false;
-            using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString))
-            {
-                using (SqlDataAdapter sda = new SqlDataAdapter("SELECT * FROM Users WHERE Email = @Email", con))
-                {
-                    sda.SelectCommand.Parameters.AddWithValue("@Email", email.Trim());
-                    DataSet ds = new DataSet();
-                    sda.Fill(ds);
-                    exists = Convert.ToBoolean(ds.Tables[0].Rows.Count);
-                }
-            }
-            return exists;
-        }
     }
 }

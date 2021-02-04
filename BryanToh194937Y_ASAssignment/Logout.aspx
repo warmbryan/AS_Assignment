@@ -4,7 +4,22 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="style" runat="server">
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="form" runat="server">
-    <h2>You have successfully signed out.</h2>
 </asp:Content>
+
+<asp:Content ID="Content5" ContentPlaceHolderID="body" runat="server">
+    <div class="container h-100">
+        <div class="text-center">
+        <h2>Successfully logged out, you may close this window.</h2>
+        <p>You will be redirected to the login page in 5 seconds.</p>
+    </div>
+    </div>
+    
+</asp:Content>
+
 <asp:Content ID="Content4" ContentPlaceHolderID="scripts" runat="server">
+    <script>
+        setTimeout(function () {
+            window.location.href = "/Login.aspx";
+        }, 5000);
+    </script>
 </asp:Content>
