@@ -14,9 +14,9 @@ namespace BryanToh194937Y_ASAssignment.App_Code.Utility
     {
         public static async Task SendEmail(string email)
         {
-            var apiKey = "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";
+            var apiKey = "";
             var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("bryan@envorial.com", "Bryan AS");
+            var from = new EmailAddress("", "Bryan AS");
             var subject = "Automated Account Recovery";
             var to = new EmailAddress(email, "User");
             var plainTextContent = "and easy to do anywhere, even with C#";
